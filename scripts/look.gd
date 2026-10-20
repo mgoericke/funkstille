@@ -10,6 +10,8 @@ const TEX_DIR := "res://assets/textures/"
 ## gi: &"sdfgi" schaltet SDFGI ein; &"voxelgi" und &"none" lassen es aus
 ## (VoxelGI ist ein Node, siehe add_voxel_gi).
 static func make_environment(gi: StringName = &"sdfgi") -> Environment:
+	if not gi in [&"sdfgi", &"voxelgi", &"none"]:
+		push_error("Look: unbekannte GI-Variante '%s'" % gi)
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.01, 0.012, 0.012)
@@ -59,6 +61,12 @@ static func make_camera_attributes() -> CameraAttributesPractical:
 	return attr
 
 
+## Setzt Environment und Kamera-Attribute (Auto-Belichtung) zusammen; so vergisst niemand die Belichtung.
+static func apply(world_env: WorldEnvironment, gi: StringName = &"sdfgi") -> void:
+	world_env.environment = make_environment(gi)
+	world_env.camera_attributes = make_camera_attributes()
+
+
 ## VoxelGI-Node fuer den Bereich size um den Ursprung des Parents; wird sofort gebacken.
 static func add_voxel_gi(parent: Node3D, size: Vector3, center: Vector3) -> VoxelGI:
 	var vgi := VoxelGI.new()
@@ -74,7 +82,13 @@ static func add_voxel_gi(parent: Node3D, size: Vector3, center: Vector3) -> Voxe
 ## uv_scale: Kacheln pro Meter (Triplanar in Weltkoordinaten), damit Boxen beliebiger Groesse passen.
 static func pbr(id: String, uv_scale: Vector3 = Vector3.ONE) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(1, 0, 1)  # sichtbares Magenta bei fehlender Textur
 	var dir := TEX_DIR + id + "/"
+	for f in ["diffuse", "normal", "rough"]:
+		if not ResourceLoader.exists(dir + f + ".jpg"):
+			push_error("Look.pbr: Textur '%s' fehlt (%s%s.jpg), erst tools/fetch_polyhaven.py ausfuehren" % [id, dir, f])
+			return m
+	m.albedo_color = Color.WHITE
 	m.albedo_texture = load(dir + "diffuse.jpg")
 	m.normal_enabled = true
 	m.normal_texture = load(dir + "normal.jpg")

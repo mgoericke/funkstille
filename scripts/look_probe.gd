@@ -17,8 +17,7 @@ var gi: StringName = &"sdfgi"
 func _ready() -> void:
 	var we := WorldEnvironment.new()
 	we.name = "WorldEnvironment"
-	we.environment = Look.make_environment(gi)
-	we.camera_attributes = Look.make_camera_attributes()
+	Look.apply(we, gi)
 	add_child(we)
 
 	_build_tunnel()
@@ -166,14 +165,14 @@ func _build_lights() -> void:
 func _build_dust() -> void:
 	var p := GPUParticles3D.new()
 	p.name = "Staub"
-	p.amount = 160
+	p.amount = 120
 	p.lifetime = 14.0
 	p.preprocess = 14.0
 	p.visibility_aabb = AABB(Vector3(-4, -1, -14), Vector3(8, 6, 16))
-	p.position = Vector3(0, HEIGHT / 2, -LEN / 2)
+	p.position = Vector3(0, HEIGHT / 2, -LEN / 2 - 1.0)
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
-	pm.emission_box_extents = Vector3(HALF_W, HEIGHT / 2, LEN / 2)
+	pm.emission_box_extents = Vector3(HALF_W, HEIGHT / 2, LEN / 2 - 1.0)
 	pm.gravity = Vector3(0, -0.01, 0)
 	pm.initial_velocity_min = 0.02
 	pm.initial_velocity_max = 0.08
@@ -182,14 +181,15 @@ func _build_dust() -> void:
 	pm.turbulence_enabled = true
 	pm.turbulence_noise_strength = 0.15
 	pm.turbulence_noise_scale = 2.0
-	pm.scale_min = 0.5
-	pm.scale_max = 1.2
+	pm.scale_min = 0.3
+	pm.scale_max = 1.1
 	p.process_material = pm
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.012, 0.012)
+	quad.size = Vector2(0.008, 0.008)
 	var dm := StandardMaterial3D.new()
-	dm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	dm.albedo_color = Color(0.9, 0.92, 0.85, 0.8)
+	# Gelit statt selbstleuchtend: sichtbar nur dort, wo Licht durchfaellt
+	dm.albedo_color = Color(0.55, 0.55, 0.5, 0.55)
+	dm.roughness = 1.0
 	dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	quad.material = dm
