@@ -1,5 +1,5 @@
 extends Node
-## Autoload "Noise": Geraeusch-Ereignisse. Der Lauscher hoert darauf.
+## Autoload "NoiseBus": Geraeusch-Ereignisse. Der Lauscher hoert darauf.
 ## Quellen: &"step", &"sprint", &"shards", &"bottle", &"radio"
 
 signal emitted(pos: Vector3, radius: float, source: StringName)

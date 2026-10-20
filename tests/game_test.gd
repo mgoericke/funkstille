@@ -23,10 +23,10 @@ func load_main(start_at := &"spawn") -> void:
 	await wait(0.3)
 
 
-## Autoload "Noise" in Testskripten: der Bezeichner wird dort vor den Autoloads kompiliert
-## und von der Engine-Klasse Noise ueberdeckt, daher ueber den Pfad holen.
-func noise_node() -> Node:
-	return root.get_node("Noise")
+## Autoload NoiseBus in Testskripten: --script kompiliert vor den Autoloads,
+## der Bezeichner ist dort unbekannt, daher ueber den Pfad holen.
+func noise_bus() -> Node:
+	return root.get_node("NoiseBus")
 
 
 func wait(seconds: float) -> void:

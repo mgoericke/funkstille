@@ -16,7 +16,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
-Noise="*res://scripts/noise.gd"
+NoiseBus="*res://scripts/noise_bus.gd"
 
 [display]
 
