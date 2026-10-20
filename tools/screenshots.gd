@@ -5,13 +5,18 @@ extends SceneTree
 ##
 ## Eintrag: {"scene", "eye", "look_at", "file"} und optional "gi" (StringName fuer die Look-Probe).
 ## Szenen mit eigener Camera3D: die Kamera wird auf eye gesetzt und blickt nach look_at.
-## Spaeter fuer main.tscn: Eintrag mit "player": true, dann wird statt der Kamera der Spieler
-## positioniert (hier noch nicht noetig, _place_view ist die einzige Stelle dafuer).
+## Szene res://main.tscn: eye ist die Fussposition des Spielers (Augen 1,6 m darueber), er blickt nach look_at;
+## der Gegner wird ruhig gestellt (Lauscher, sobald vorhanden).
 
 const SHOTS := [
 	{"scene": "res://scenes/look_probe.tscn", "eye": Vector3(0.6, 1.65, 0.0), "look_at": Vector3(-0.2, 1.45, -12.0), "file": "look-sdfgi", "gi": &"sdfgi"},
 	{"scene": "res://scenes/look_probe.tscn", "eye": Vector3(0.6, 1.65, 0.0), "look_at": Vector3(-0.2, 1.45, -12.0), "file": "look-voxelgi", "gi": &"voxelgi"},
 	{"scene": "res://scenes/look_probe.tscn", "eye": Vector3(0.6, 1.65, 0.0), "look_at": Vector3(-0.2, 1.45, -12.0), "file": "look-none", "gi": &"none"},
+]
+
+const MAIN_SHOTS := [
+	{"scene": "res://main.tscn", "eye": Vector3(3, 0, -30), "look_at": Vector3(-3, 1.4, -50), "file": "level-tunnel"},
+	{"scene": "res://main.tscn", "eye": Vector3(-5, 1, -87), "look_at": Vector3(0, 1.4, -120), "file": "level-bahnsteig"},
 ]
 
 const WARMUP_FRAMES := 120
@@ -34,7 +39,7 @@ func _initialize() -> void:
 	var only := OS.get_environment("ONLY")
 	var measure := OS.get_environment("FPS") == "1"
 	print("Fenster: ", root.size, " (3D-Skalierung ", root.scaling_3d_scale, ")")
-	for shot in SHOTS:
+	for shot in SHOTS + MAIN_SHOTS:
 		if only != "" and not (shot["file"] as String).contains(only):
 			continue
 		if current != null:
@@ -50,6 +55,8 @@ func _initialize() -> void:
 		_place_view(shot)
 		for i in WARMUP_FRAMES:
 			await process_frame
+		if current.get("player") != null:
+			print("  Spieler bei ", current.player.global_position)
 		var img := root.get_viewport().get_texture().get_image()
 		img.save_png("%s/%s.png" % [out, shot["file"]])
 		var line := "  docs/screenshots/%s.png" % shot["file"]
@@ -67,6 +74,14 @@ func _initialize() -> void:
 
 ## Kamera (oder spaeter Spieler) auf den Blickpunkt setzen
 func _place_view(shot: Dictionary) -> void:
+	if shot["scene"] == "res://main.tscn":
+		var l = current.get("lauscher")
+		if l != null:
+			l.active = false
+		var eye: Vector3 = shot["eye"]
+		var dir: Vector3 = (shot["look_at"] as Vector3) - (eye + Vector3(0, Player.HEAD_STAND, 0))
+		current.player.reset_to(Transform3D(Basis.looking_at(dir.normalized()), eye))
+		return
 	var cam := current.get_node_or_null("Camera3D") as Camera3D
 	if cam == null:
 		cam = current.find_child("Camera3D", true, false) as Camera3D

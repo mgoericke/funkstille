@@ -59,7 +59,7 @@ func _initialize() -> void:
 	check(p.flashlight_on != was and p.get_node("Head/Camera3D/Flashlight").visible == p.flashlight_on, "F schaltet Taschenlampe")
 
 	# Blickrichtung: Bewegung relativ zum Yaw
-	p.reset_to(Transform3D(Basis(Vector3.UP, PI / 2.0), Vector3(0, 0, 0)))
+	p.reset_to(Transform3D(Basis(Vector3.UP, PI / 2.0), Vector3(0, 0, -30)))
 	var x0 := p.global_position.x
 	await hold(&"move_forward", 1.0)
 	check(p.global_position.x < x0 - 2.0, "Bewegung folgt der Blickrichtung (Yaw 90 Grad -> -X)")
