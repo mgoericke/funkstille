@@ -53,3 +53,11 @@ func hold(action: StringName, seconds: float) -> void:
 	Input.action_press(action)
 	await wait(seconds)
 	Input.action_release(action)
+
+
+## Aktion kurz antippen: druecken, zwei Physik-Frames, loslassen
+func tap(action: StringName) -> void:
+	Input.action_press(action)
+	await wait(2.0 / PHYSICS_HZ)
+	Input.action_release(action)
+	await wait(2.0 / PHYSICS_HZ)
