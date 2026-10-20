@@ -53,6 +53,9 @@ func toggle() -> void:
 	_pulse = 0.0
 	_switch_player.play()
 	_apply_play_state()
+	# Einschalten ist selbst laut: sofort ein Impuls, nicht erst nach RADIO_PULSE
+	if on and not clear_voice:
+		_bus.emit(global_position, Tuning.NOISE_RADIO, &"radio")
 
 
 func update_sound(s: float) -> void:
@@ -78,6 +81,7 @@ func _process(delta: float) -> void:
 	update_sound(strength(global_position))
 	# Klare Stimme (Ende) ist kein Rauschen: nichts, was der Lauscher hoeren koennte
 	if clear_voice:
+		_pulse = 0.0  # kein aufgestauter Impuls, wenn die Stimme wieder endet
 		return
 	_pulse += delta
 	if _pulse >= Tuning.RADIO_PULSE:

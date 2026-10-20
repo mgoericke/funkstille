@@ -19,19 +19,27 @@ func _initialize() -> void:
 	check(r.beacon.is_equal_approx(main.level.beacon), "Beacon = Level.beacon")
 
 	var pulses := []
-	noise_bus().emitted.connect(func(_p, rad, s):
+	var pos_ok := [true]
+	noise_bus().emitted.connect(func(p, rad, s):
 		if s == &"radio":
-			pulses.append(rad))
+			pulses.append(rad)
+			if not p.is_equal_approx(r.global_position):
+				pos_ok[0] = false)
 	await wait(2.0)
 	check(pulses.size() >= 3 and pulses.size() <= 5, "Rauscht alle 0,5 s (%d Impulse)" % pulses.size())
 	check(pulses.all(func(x): return x == Tuning.NOISE_RADIO), "Radius 12 m")
+	check(pos_ok[0], "Impuls an der Position des Funkgeraets")
 
 	await tap(&"radio")
 	pulses.clear()
 	await wait(2.0)
 	check(not r.on and pulses.size() == 0, "R schaltet aus, danach still")
-	await tap(&"radio")
-	check(r.on, "R schaltet wieder ein")
+	pulses.clear()
+	Input.action_press(&"radio")
+	await wait(0.1)
+	Input.action_release(&"radio")
+	check(r.on and pulses.size() >= 1, "Einschalten sendet sofort einen Impuls (<0,1 s)")
+	await wait(0.1)
 
 	# Lautstaerken: Rauschen leiser, Ton lauter mit wachsender Staerke
 	r.update_sound(0.15)
