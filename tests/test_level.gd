@@ -13,7 +13,7 @@ func _initialize() -> void:
 	check(L.shard_zones.size() == 2 and L.bottle_spots.size() == 4, "Marker vollstaendig")
 	check(L.patrol.size() == 3 and L.lauscher_start == Vector3(0, 1, -104), "Patrouille und Lauscher-Start")
 	check(L.checkpoint.origin.distance_to(L.lauscher_start) >= 26.0, "Checkpoint ausser Hoerweite")
-	check(L.tower_top == Vector3(60, 156, -600) and L.exit_z == -150.0, "Turm und Ausgang")
+	check(L.tower_top == Vector3(60, 208, -600) and L.exit_z == -150.0, "Turm und Ausgang")
 	check(await reachable([Vector3(0, 0, -20), Vector3(0, 0, -79), Vector3(-5, 0, -81), Vector3(-5, 1, -86.2), Vector3(0, 1, -90), Vector3(0, 1, -128), Vector3(0, 6, -145), Vector3(0, 6, -152)]), "Weg Spawn bis Strasse begehbar")
 	# Gleisbett hat einen Ausgang: links hinten hoch, rechts analog
 	main.player.reset_to(Transform3D(Basis(), Vector3(-6, 0.2, -110)))
@@ -26,6 +26,11 @@ func _initialize() -> void:
 	check(main.player.global_position.y < 0.2 and main.player.global_position.z > -80.0, "Stirnkante bei z -80 nicht begehbar")
 	# Navigation: Karte braucht ein paar Frames, bis sie synchron ist
 	await wait(0.2)
-	var nav_path := NavigationServer3D.map_get_path(L.nav_region.get_navigation_map(), L.lauscher_start, Vector3(-7, 0, -100), true)
-	check(nav_path.size() > 1, "Navigation verbindet Bahnsteig und Gleisbett")
+	for sx in [-1.0, 1.0]:
+		var goal := Vector3(7.0 * sx, 0, -100)
+		var nav_path := NavigationServer3D.map_get_path(L.nav_region.get_navigation_map(), L.lauscher_start, goal, true)
+		var ends_near := nav_path.size() > 1 and nav_path[nav_path.size() - 1].distance_to(goal) < 1.0
+		var via_ramp: bool = Array(nav_path).any(func(q: Vector3): return q.y > 0.2 and q.y < 0.8)
+		check(ends_near, "Navigation erreicht das Gleisbett (%s)" % ("links" if sx < 0 else "rechts"))
+		check(via_ramp, "Navigationspfad fuehrt ueber eine Rampe (%s)" % ("links" if sx < 0 else "rechts"))
 	finish()

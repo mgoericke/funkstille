@@ -17,8 +17,8 @@ var shard_zones: Array[AABB] = [
 ]
 var voice_trigger := AABB(Vector3(-2, 1, -134), Vector3(4, 6, 4))
 var exit_z := -150.0
-var tower_top := Vector3(60, 156, -600)
-var beacon := Vector3(60, 156, -600)
+var tower_top := Vector3(60, 208, -600)  # blinkendes Licht oben
+var beacon := Vector3(60, 208, -600)
 
 var nav_region: NavigationRegion3D
 
@@ -162,7 +162,7 @@ func _build_hall() -> void:
 		_ramp(side[0], side[1], -82, 0, -86, 1, _concrete, 0.4, g)
 		_box(Vector3(side[0], 0, -86), Vector3(side[1], 1, -87.8), _concrete, true, g)
 		_ramp(side[0], side[1], -124, 0, -128, 1, _concrete, 0.4, g)
-		_box(Vector3(side[0], 0, -128), Vector3(side[1], 1, -129.8), _concrete, true, g)
+		_box(Vector3(side[0], 0, -128), Vector3(side[1], 1, -130), _concrete, true, g)
 
 
 func _build_stairs_and_street() -> void:
@@ -213,7 +213,7 @@ func _build_tower() -> void:
 	add_child(ball)
 	var blink := OmniLight3D.new()
 	blink.name = "TowerBeacon"
-	blink.position = Vector3(60, 208, -600)
+	blink.position = tower_top
 	blink.light_color = Color(1.0, 0.15, 0.1)
 	blink.light_energy = 3.0
 	blink.omni_range = 40.0

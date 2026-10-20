@@ -12,12 +12,17 @@ for t in tests/test_*.gd; do
 	tmp=$(mktemp)
 	"$GODOT" --headless --path . --script "res://$t" >"$tmp" 2>&1 &
 	pid=$!
-	( sleep "${TEST_TIMEOUT:-120}"; kill -9 "$pid" 2>/dev/null && echo "ZEITLIMIT ueberschritten" >>"$tmp" ) &
-	dog=$!
+	# Zeitlimit per Abfrage (kein Hintergrund-sleep, sonst bleibt stdout offen)
+	for ((i = 0; i < ${TEST_TIMEOUT:-120}; i++)); do
+		kill -0 "$pid" 2>/dev/null || break
+		sleep 1
+	done
+	if kill -0 "$pid" 2>/dev/null; then
+		kill -9 "$pid" 2>/dev/null
+		echo "ZEITLIMIT ueberschritten" >>"$tmp"
+	fi
 	wait "$pid"
 	code=$?
-	kill "$dog" 2>/dev/null
-	wait "$dog" 2>/dev/null
 	out=$(cat "$tmp")
 	rm -f "$tmp"
 	echo "$out" | grep -E "^(  |[0-9]+/|[A-Z])"
