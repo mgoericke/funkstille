@@ -17,4 +17,5 @@ func _ready() -> void:
 	player = Player.new()
 	player.name = "Player"
 	add_child(player)
+	player.radio.beacon = level.beacon
 	player.reset_to(level.checkpoint if start_at == &"checkpoint" else level.spawn)

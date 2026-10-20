@@ -29,6 +29,7 @@ var head: Node3D
 var camera: Camera3D
 var flashlight: SpotLight3D
 var hold_point: Node3D
+var radio: Radio
 
 var _pitch := 0.0
 var _shape: CapsuleShape3D
@@ -61,6 +62,8 @@ func _ready() -> void:
 	head.add_child(camera)
 	flashlight = Look.flashlight()
 	camera.add_child(flashlight)
+	radio = Radio.new()
+	head.add_child(radio)
 	hold_point = Node3D.new()
 	hold_point.name = "HoldPoint"
 	hold_point.position = Vector3(0.28, -0.22, -0.65)
@@ -148,6 +151,8 @@ func _physics_process(delta: float) -> void:
 	if input_enabled:
 		if Input.is_action_just_pressed(&"crouch"):
 			_set_crouching(not crouching)
+		if Input.is_action_just_pressed(&"radio"):
+			radio.toggle()
 		if Input.is_action_just_pressed(&"flashlight"):
 			toggle_flashlight()
 		move = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")

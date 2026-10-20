@@ -151,12 +151,45 @@ def click_light():
     return normalize(mix((tick, 1.0, 0), (body, 0.4, 0)), 0.5)
 
 
+def radio_static():
+    # Funkrauschen: Band um 1-4 kHz, langsam pumpend; 2 s, nahtlos
+    n = lowpass(highpass(noise(2.5), 500), 4200)
+    for i in range(len(n)):
+        n[i] *= 0.75 + 0.25 * math.sin(2 * math.pi * 3.0 * i / SR)
+    crackle = [0.0] * n_of(2.5)
+    for _ in range(10):
+        o = random.randrange(0, len(crackle) - n_of(0.02))
+        for i, v in enumerate(env_exp(highpass(noise(0.02), 2000), 200)):
+            crackle[o + i] += v * 1.2
+    return normalize(loopable([a + b for a, b in zip(n, crackle)], 0.5), 0.7)
+
+
+def radio_tone():
+    # Ruhiger Traegerton mit leichtem Schweben (Sinus-Summe, ganze Perioden je 2 s -> nahtlos)
+    secs = 2.0
+    t = [i / SR for i in range(n_of(secs))]
+    out = [0.6 * math.sin(2 * math.pi * 220 * x + 1.5 * math.sin(2 * math.pi * 1.0 * x))
+           + 0.25 * math.sin(2 * math.pi * 330 * x)
+           + 0.12 * math.sin(2 * math.pi * 440 * x) for x in t]
+    return normalize(out, 0.6)
+
+
+def radio_switch():
+    # Funkgeraet an/aus: kurzes Knacken mit Rauschstoss
+    tick = env_exp(bandpass(noise(0.05), 1800, 2.0), 90)
+    burst = env_exp(lowpass(noise(0.12), 3000), 35)
+    return normalize(mix((tick, 1.0, 0), (burst, 0.5, 0.01)), 0.5)
+
+
 SOUNDS = {
     "step_concrete_1": lambda: step_concrete(0),
     "step_concrete_2": lambda: step_concrete(1),
     "step_concrete_3": lambda: step_concrete(2),
     "step_concrete_4": lambda: step_concrete(3),
     "click_light": click_light,
+    "radio_static": radio_static,
+    "radio_tone": radio_tone,
+    "radio_switch": radio_switch,
 }
 
 if __name__ == "__main__":
